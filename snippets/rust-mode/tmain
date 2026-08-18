@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: #[tokio::main]
+# key: tmain
+# --
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    $0
+    Ok(())
+}

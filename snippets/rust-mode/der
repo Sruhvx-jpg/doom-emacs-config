@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: derive attributes
+# key: der
+# --
+#[derive(Debug, Clone, ${1:PartialEq})]
+$0

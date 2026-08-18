@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: if __name__ == "__main__"
+# key: ifmain
+# --
+def main() -> None:
+    $0
+
+if __name__ == "__main__":
+    main()
