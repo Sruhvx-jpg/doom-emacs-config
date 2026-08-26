@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: make(chan Type, buffer)
+# key: ch
+# --
+${1:ch} := make(chan ${2:int}${3:, ${4:10}})
+$0

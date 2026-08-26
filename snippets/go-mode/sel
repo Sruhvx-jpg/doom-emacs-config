@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: select statement
+# key: sel
+# --
+select {
+case ${1:v} := <-${2:ch}:
+	$0
+case <-${3:ctx.Done()}:
+	return
+}

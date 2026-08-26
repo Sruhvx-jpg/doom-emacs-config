@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: if err != nil wrap error
+# key: iew
+# --
+if err != nil {
+	return ${1:nil, }fmt.Errorf("${2:failed to do operation}: %w", err)
+}
+$0

@@ -217,17 +217,23 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 ;; 10. SYSTEM BINARIES & TOOLCHAIN PATHS
 ;; ==============================================================================
 
-;; Ensure Cargo/Rust, Dotnet, LLVM/clangd, Pyright & TS binaries are always discoverable
+;; Ensure Cargo/Rust, Dotnet, Go, LLVM/clangd, Pyright & TS binaries are always discoverable
 (dolist (dir (list (expand-file-name "~/.cargo/bin")
                    (expand-file-name "~/.dotnet")
                    (expand-file-name "~/.dotnet/tools")
+                   (expand-file-name "~/.local/go/bin")
+                   (expand-file-name "~/go/bin")
                    (expand-file-name "~/.local/bin")))
   (add-to-list 'exec-path dir))
 
 (setenv "DOTNET_ROOT" (expand-file-name "~/.dotnet"))
+(setenv "GOROOT" (expand-file-name "~/.local/go"))
+(setenv "GOPATH" (expand-file-name "~/go"))
 (setenv "PATH" (concat (expand-file-name "~/.cargo/bin") ":"
                        (expand-file-name "~/.dotnet") ":"
                        (expand-file-name "~/.dotnet/tools") ":"
+                       (expand-file-name "~/.local/go/bin") ":"
+                       (expand-file-name "~/go/bin") ":"
                        (expand-file-name "~/.local/bin") ":"
                        (getenv "PATH")))
 
@@ -253,11 +259,20 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 (after! yasnippet
   (add-hook 'rustic-mode-hook (lambda () (yas-activate-extra-mode 'rust-mode)))
   (add-hook 'rust-ts-mode-hook (lambda () (yas-activate-extra-mode 'rust-mode)))
+  (add-hook 'go-ts-mode-hook (lambda () (yas-activate-extra-mode 'go-mode)))
   (add-hook 'c-ts-mode-hook (lambda () (yas-activate-extra-mode 'c-mode)))
   (add-hook 'c++-ts-mode-hook (lambda () (yas-activate-extra-mode 'c++-mode)))
   (add-hook 'python-ts-mode-hook (lambda () (yas-activate-extra-mode 'python-mode)))
   (add-hook 'typescript-ts-mode-hook (lambda () (yas-activate-extra-mode 'typescript-mode)))
   (add-hook 'csharp-ts-mode-hook (lambda () (yas-activate-extra-mode 'csharp-mode))))
+
+;; Disable popup autocomplete in Go (pure snippet expansion workflow)
+(defun my/go-disable-corfu ()
+  "Disable popup autocompletion in Go buffers, keeping snippets active."
+  (setq-local corfu-auto nil))
+
+(add-hook 'go-mode-hook #'my/go-disable-corfu)
+(add-hook 'go-ts-mode-hook #'my/go-disable-corfu)
 
 ;; Instant popup autocompletion with docs (VS Code behavior)
 (after! corfu
@@ -292,13 +307,14 @@ Does not yank you into a new buffer, and immediately syncs to disk."
     "Ensure Eglot completion is pure LSP and file completion only."
     (setq-local completion-at-point-functions
                 (list (cape-capf-buster #'eglot-completion-at-point)
-                      #'cape-file)))
+                      #'cape-file
+                      #'cape-dabbrev)))
   (add-hook 'eglot-managed-mode-hook #'my/setup-eglot-capf)
 
   (defun my/setup-prog-capf ()
     "Ensure clean fallback for non-LSP buffers."
     (unless (bound-and-true-p eglot--managed-mode)
-      (setq-local completion-at-point-functions (list #'cape-file))))
+      (setq-local completion-at-point-functions (list #'cape-dabbrev #'cape-file))))
   (add-hook 'prog-mode-hook #'my/setup-prog-capf))
 
 ;; ==============================================================================
@@ -323,29 +339,60 @@ Does not yank you into a new buffer, and immediately syncs to disk."
   (add-to-list 'eglot-server-programs
                '((typescript-mode typescript-ts-mode tsx-ts-mode js-mode js-ts-mode)
                  "typescript-language-server" "--stdio"))
+  (add-to-list 'eglot-server-programs
+               '(((rust-ts-mode :language-id "rust")
+                  (rust-mode :language-id "rust")
+                  (rustic-mode :language-id "rust"))
+                 "rust-analyzer"))
+  (add-to-list 'eglot-server-programs
+               '(((go-mode :language-id "go")
+                  (go-ts-mode :language-id "go")
+                  (go-dot-mod-mode :language-id "go.mod"))
+                 "gopls"))
 
-  ;; Rust-analyzer deep capabilities configuration
+  ;; Rust-analyzer & Gopls deep capabilities configuration
   (setq-default eglot-workspace-configuration
                 '(:rust-analyzer
-                  (:check (:command "clippy"
-                           :extraArgs ["--all-targets"])
+                  (:check (:command "clippy")
                    :cargo (:allFeatures t
                            :loadOutDirsFromCheck t
                            :buildScripts (:enable t))
                    :procMacro (:enable t)
-                   :inlayHints (:bindingModeHints (:enable t)
-                                :chainingHints (:enable t)
+                   :inlayHints (:bindingModeHints (:enable :json-false)
+                                :chainingHints (:enable :json-false)
                                 :closingBraceHints (:enable :json-false)
-                                :closureReturnTypeHints (:enable "always")
-                                :lifetimeElisionHints (:enable "skip_trivial")
-                                :parameterHints (:enable t)
-                                :typeHints (:enable t)
-                                :reborrowHints (:enable "always"))
+                                :closureReturnTypeHints (:enable "never")
+                                :lifetimeElisionHints (:enable "never")
+                                :parameterHints (:enable :json-false)
+                                :typeHints (:enable :json-false)
+                                :reborrowHints (:enable "never"))
                    :completion (:autoimport (:enable t)
                                 :postfix (:enable t)
                                 :callable (:snippets "fill_arguments"))
                    :diagnostics (:experimental (:enable t))
-                   :hover (:actions (:enable t))))))
+                   :hover (:actions (:enable t)))
+                  :gopls
+                  (:staticcheck t
+                   :completeUnimported t
+                   :gofumpt t
+                   :analyses
+                   (:fieldalignment t
+                    :nilness t
+                    :shadow t
+                    :unusedparams t
+                    :unusedwrite t
+                    :useany t
+                    :unusedvariable t)
+                   :hints
+                   (:assignVariableTypes :json-false
+                    :compositeLiteralFields :json-false
+                    :compositeLiteralTypes :json-false
+                    :constantValues :json-false
+                    :functionTypeParameters :json-false
+                    :parameterNames :json-false
+                    :rangeVariableTypes :json-false)
+                   :vulncheck "Imports"
+                   :directoryFilters ["-.git" "-.vscode" "-.idea" "-node_modules"]))))
 
 ;; Automatically activate eglot on code buffers
 (add-hook 'c-mode-hook #'eglot-ensure)
@@ -359,6 +406,12 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 (add-hook 'js-mode-hook #'eglot-ensure)
 (add-hook 'csharp-mode-hook #'eglot-ensure)
 (add-hook 'csharp-ts-mode-hook #'eglot-ensure)
+(add-hook 'rust-mode-hook #'eglot-ensure)
+(add-hook 'rust-ts-mode-hook #'eglot-ensure)
+(add-hook 'rustic-mode-hook #'eglot-ensure)
+(add-hook 'go-mode-hook #'eglot-ensure)
+(add-hook 'go-ts-mode-hook #'eglot-ensure)
+(add-hook 'go-dot-mod-mode-hook #'eglot-ensure)
 
 ;; ==============================================================================
 ;; 13. RUST POWERHOUSE WORKFLOW
@@ -366,17 +419,22 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 
 (after! rustic
   (setq rustic-lsp-client 'eglot
-        rustic-format-on-save t
+        rustic-format-on-save nil
         rustic-format-display-method 'pop-to-buffer))
 
+;; Inlay hints disabled by default (no annoying inline text clutter)
 (add-hook 'eglot-managed-mode-hook
           (lambda ()
             (when (fboundp 'eglot-inlay-hints-mode)
-              (eglot-inlay-hints-mode 1))))
+              (eglot-inlay-hints-mode -1))))
+
+;; Leader key shortcut to toggle Inlay Hints on demand (SPC t i)
+(map! :leader
+      :desc "Toggle Inlay Hints" "t i" #'eglot-inlay-hints-mode)
 
 ;; Rust Keybindings (<leader> m / localleader in Rust buffers)
 (map! :localleader
-      :map (rustic-mode-map rust-mode-map)
+      :map (rustic-mode-map rust-mode-map rust-ts-mode-map)
       :desc "Cargo Run"          "r" #'rustic-cargo-run
       :desc "Cargo Build"        "b" #'rustic-cargo-build
       :desc "Cargo Check"        "c" #'rustic-cargo-check
@@ -545,6 +603,68 @@ Does not yank you into a new buffer, and immediately syncs to disk."
       :desc "Run TS/JS Script" "r" #'my/ts-js-run)
 
 ;; ==============================================================================
+;; 18. GO WORKFLOW & POWERHOUSE CONTROLS
+;; ==============================================================================
+
+(defun my/go-run ()
+  "Run the current Go package or single file."
+  (interactive)
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (compile "go run .")))
+
+(defun my/go-build ()
+  "Build the current Go project."
+  (interactive)
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (compile "go build ./...")))
+
+(defun my/go-test ()
+  "Run all Go unit tests."
+  (interactive)
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (compile "go test -v ./...")))
+
+(defun my/go-test-current ()
+  "Run the Go test under cursor."
+  (interactive)
+  (let* ((fn (which-function))
+         (cmd (if (and fn (string-match-p "^Test" fn))
+                  (format "go test -v -run '^%s$'" fn)
+                "go test -v .")))
+    (compile cmd)))
+
+(defun my/go-lint ()
+  "Run golangci-lint on the current Go module."
+  (interactive)
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (compile "golangci-lint run")))
+
+(defun my/go-mod-tidy ()
+  "Run go mod tidy."
+  (interactive)
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (compile "go mod tidy")))
+
+(defun my/go-doc ()
+  "Look up Go documentation for symbol under cursor."
+  (interactive)
+  (let ((sym (thing-at-point 'symbol t)))
+    (if sym
+        (compile (format "go doc %s" sym))
+      (user-error "No symbol under cursor"))))
+
+(map! :localleader
+      :map (go-mode-map go-ts-mode-map)
+      :desc "Go Run"                "r" #'my/go-run
+      :desc "Go Build"              "b" #'my/go-build
+      :desc "Go Test (All)"         "t" #'my/go-test
+      :desc "Go Test (Current)"     "T" #'my/go-test-current
+      :desc "Golangci-lint (Check)" "c" #'my/go-lint
+      :desc "Go Mod Tidy"           "g" #'my/go-mod-tidy
+      :desc "Go Doc"                "d" #'my/go-doc
+      :desc "Format Buffer"         "=" #'eglot-format-buffer)
+
+;; ==============================================================================
 ;; 12. SAFE RELOAD OVERRIDE (Fixes broken SPC h r r)
 ;; ==============================================================================
 (defun my/safe-reload-config ()
@@ -636,6 +756,21 @@ Does not yank you into a new buffer, and immediately syncs to disk."
       :i "C-y"   #'undo-fu-only-redo
       :v "C-z"   #'undo-fu-only-undo
       :v "C-S-z" #'undo-fu-only-redo)
+
+;; ==============================================================================
+;; 16. MEMORY MANAGEMENT & UNDO TUNING
+;; ==============================================================================
+(after! gcmh
+  (setq gcmh-high-cons-threshold (* 256 1024 1024)  ; 256MB during editing
+        gcmh-idle-delay 1.0))
+
+(setq undo-limit (* 32 1024 1024)         ; 32MB
+      undo-strong-limit (* 64 1024 1024)  ; 64MB
+      undo-outer-limit (* 128 1024 1024)) ; 128MB
+
+;; Suppress disruptive popup when undo history exceeds boundary
+(add-to-list 'warning-suppress-types '(undo discard-info))
+
 
 
 

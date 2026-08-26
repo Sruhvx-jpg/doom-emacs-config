@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: Struct + Constructor New
+# key: wr
+# --
+type ${1:Service} struct {
+	${2:field} ${3:string}
+}
+
+func New${1:Service}(${4:field} ${3:string}) *${1:Service} {
+	return &${1:Service}{
+		$4: $4,
+	}
+}
+$0

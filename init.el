@@ -62,6 +62,7 @@
        (csharp +lsp +tree-sitter)
        (data +tree-sitter)
        (emacs-lisp)
+       (go +lsp +tree-sitter)
        (javascript +lsp +tree-sitter)
        (json +lsp +tree-sitter)
        (markdown +grip)

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: if err != nil log.Fatalf
+# key: ief
+# --
+if err != nil {
+	log.Fatalf("${1:fatal error}: %v", err)
+}
+$0
