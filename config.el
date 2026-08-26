@@ -245,6 +245,12 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 ;; 11. ULTRA-FAST AUTO-COMPLETION & SNIPPETS (VS Code-style Corfu + Yasnippet)
 ;; ==============================================================================
 
+;; Ensure tree-sitter grammars are always discovered
+(after! treesit
+  (dolist (dir (list (expand-file-name "~/.config/emacs/tree-sitter")
+                     (expand-file-name "~/.config/emacs/.local/etc/tree-sitter")))
+    (add-to-list 'treesit-extra-load-path dir)))
+
 ;; Yasnippet Setup & Snippet Expansion globally
 (use-package! yasnippet
   :config
@@ -265,14 +271,6 @@ Does not yank you into a new buffer, and immediately syncs to disk."
   (add-hook 'python-ts-mode-hook (lambda () (yas-activate-extra-mode 'python-mode)))
   (add-hook 'typescript-ts-mode-hook (lambda () (yas-activate-extra-mode 'typescript-mode)))
   (add-hook 'csharp-ts-mode-hook (lambda () (yas-activate-extra-mode 'csharp-mode))))
-
-;; Disable popup autocomplete in Go (pure snippet expansion workflow)
-(defun my/go-disable-corfu ()
-  "Disable popup autocompletion in Go buffers, keeping snippets active."
-  (setq-local corfu-auto nil))
-
-(add-hook 'go-mode-hook #'my/go-disable-corfu)
-(add-hook 'go-ts-mode-hook #'my/go-disable-corfu)
 
 ;; Instant popup autocompletion with docs (VS Code behavior)
 (after! corfu
@@ -301,20 +299,28 @@ Does not yank you into a new buffer, and immediately syncs to disk."
   (define-key corfu-map (kbd "C-d") #'corfu-popupinfo-toggle)
   (define-key corfu-map (kbd "M-d") #'corfu-popupinfo-toggle))
 
-;; Pure LSP completion pipeline - no noisy dabbrev or snippet spam
+;; Rich completion pipeline - LSP candidates + Snippets + File paths + Dabbrev
 (after! cape
+  (require 'yasnippet-capf nil t)
   (defun my/setup-eglot-capf ()
-    "Ensure Eglot completion is pure LSP and file completion only."
+    "Ensure Eglot completion blends LSP candidates and snippet suggestions seamlessly."
     (setq-local completion-at-point-functions
-                (list (cape-capf-buster #'eglot-completion-at-point)
+                (list (if (fboundp 'yasnippet-capf)
+                          (cape-capf-super
+                           (cape-capf-buster #'eglot-completion-at-point)
+                           #'yasnippet-capf)
+                        (cape-capf-buster #'eglot-completion-at-point))
                       #'cape-file
                       #'cape-dabbrev)))
   (add-hook 'eglot-managed-mode-hook #'my/setup-eglot-capf)
 
   (defun my/setup-prog-capf ()
-    "Ensure clean fallback for non-LSP buffers."
+    "Ensure clean fallback with snippets and dabbrev for non-LSP buffers."
     (unless (bound-and-true-p eglot--managed-mode)
-      (setq-local completion-at-point-functions (list #'cape-dabbrev #'cape-file))))
+      (setq-local completion-at-point-functions
+                  (list (if (fboundp 'yasnippet-capf) #'yasnippet-capf #'cape-dabbrev)
+                        #'cape-file
+                        #'cape-dabbrev))))
   (add-hook 'prog-mode-hook #'my/setup-prog-capf))
 
 ;; ==============================================================================
@@ -374,6 +380,7 @@ Does not yank you into a new buffer, and immediately syncs to disk."
                   :gopls
                   (:staticcheck t
                    :completeUnimported t
+                   :usePlaceholders t
                    :gofumpt t
                    :analyses
                    (:fieldalignment t
@@ -653,6 +660,24 @@ Does not yank you into a new buffer, and immediately syncs to disk."
         (compile (format "go doc %s" sym))
       (user-error "No symbol under cursor"))))
 
+(defun my/go-organize-imports ()
+  "Organize Go imports using Eglot/gopls."
+  (interactive)
+  (if (bound-and-true-p eglot--managed-mode)
+      (eglot-code-action-organize-imports (point-min) (point-max))
+    (user-error "Eglot is not active in this buffer")))
+
+(defun my/go-before-save-hook ()
+  "Automatically organize imports and format Go buffers before saving."
+  (when (and (bound-and-true-p eglot--managed-mode)
+             (derived-mode-p 'go-mode 'go-ts-mode))
+    (ignore-errors
+      (eglot-code-action-organize-imports (point-min) (point-max)))
+    (ignore-errors
+      (eglot-format-buffer))))
+
+(add-hook 'before-save-hook #'my/go-before-save-hook)
+
 (map! :localleader
       :map (go-mode-map go-ts-mode-map)
       :desc "Go Run"                "r" #'my/go-run
@@ -662,6 +687,7 @@ Does not yank you into a new buffer, and immediately syncs to disk."
       :desc "Golangci-lint (Check)" "c" #'my/go-lint
       :desc "Go Mod Tidy"           "g" #'my/go-mod-tidy
       :desc "Go Doc"                "d" #'my/go-doc
+      :desc "Organize Imports"      "i" #'my/go-organize-imports
       :desc "Format Buffer"         "=" #'eglot-format-buffer)
 
 ;; ==============================================================================
