@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: not null (GORM attribute)
+# key: notnull
+# --
+not null$0

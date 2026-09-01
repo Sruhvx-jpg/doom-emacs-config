@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] UUID Primary Key Tag
+# key: gorm-pk
+# --
+gorm:"type:uuid;primaryKey" json:"id"$0

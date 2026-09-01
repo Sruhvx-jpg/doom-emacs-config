@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: [gorm] DB Transaction
+# key: gorm-tx
+# --
+if err := ${1:db}.Transaction(func(tx *gorm.DB) error {
+	$0
+	return nil
+}); err != nil {
+	return ${2:err}
+}

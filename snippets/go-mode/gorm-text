@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] Text Tag
+# key: gorm-text
+# --
+gorm:"type:text;not null" json:"${1:content}"$0

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: uniqueIndex (GORM attribute)
+# key: uniqueIndex
+# --
+uniqueIndex;not null$0

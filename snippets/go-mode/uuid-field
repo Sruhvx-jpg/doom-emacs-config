@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [uuid] Struct Field
+# key: uuid-field
+# --
+${1:Field} uuid.UUID \`gorm:"type:uuid;not null" json:"${2:field}"\`$0

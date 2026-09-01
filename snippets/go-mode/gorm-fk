@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] Foreign Key Tag
+# key: gorm-fk
+# --
+gorm:"type:uuid;not null;index" json:"${1:user_id}"$0

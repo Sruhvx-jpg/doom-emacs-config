@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [primaryKey] Int AutoIncrement Field
+# key: primaryKey-int
+# --
+ID uint64 \`gorm:"primaryKey;autoIncrement" json:"id"\`$0

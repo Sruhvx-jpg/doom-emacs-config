@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: [uuid] Nil Check & Assign
+# key: uuid-check
+# --
+if ${1:m.ID} == uuid.Nil {
+	${1:m.ID} = uuid.New()
+}
+$0

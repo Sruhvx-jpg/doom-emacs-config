@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [primary] Primary Key UUID Field
+# key: primary
+# --
+ID uuid.UUID \`gorm:"type:uuid;primaryKey" json:"id"\`$0

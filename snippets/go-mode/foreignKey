@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: foreignKey (GORM attribute)
+# key: foreignKey
+# --
+foreignKey:${1:Parent}ID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;$0

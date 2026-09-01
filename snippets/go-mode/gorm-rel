@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] Relation Tag
+# key: gorm-rel
+# --
+gorm:"foreignKey:${1:User}ID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"${2:user}"$0

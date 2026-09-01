@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: autoCreateTime (GORM attribute)
+# key: autoCreateTime
+# --
+autoCreateTime$0

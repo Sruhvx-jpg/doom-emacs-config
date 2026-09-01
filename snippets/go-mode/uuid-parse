@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: [uuid] Parse Helper
+# key: uuid-parse
+# --
+${1:id}, err := uuid.Parse(${2:str})
+if err != nil {
+	return ${3:err}
+}
+$0

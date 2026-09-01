@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] Boolean Tag
+# key: gorm-bool
+# --
+gorm:"type:boolean;default:false;not null" json:"${1:is_active}"$0

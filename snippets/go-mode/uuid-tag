@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [uuid] GORM Tag
+# key: uuid-tag
+# --
+gorm:"type:uuid;not null" json:"${1:field}"$0

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [primaryKey] Tag Attribute
+# key: primaryKey
+# --
+primaryKey$0

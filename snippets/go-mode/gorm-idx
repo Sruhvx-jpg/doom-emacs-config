@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: [gorm] Index Tag
+# key: gorm-idx
+# --
+gorm:"index" json:"${1:field}"$0

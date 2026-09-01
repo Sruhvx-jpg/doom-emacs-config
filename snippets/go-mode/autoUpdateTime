@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: autoUpdateTime (GORM attribute)
+# key: autoUpdateTime
+# --
+autoUpdateTime$0
