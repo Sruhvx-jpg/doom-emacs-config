@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM Soft Delete Tag
+# key: gdel
+# --
+\`gorm:"index" json:"-"\`$0

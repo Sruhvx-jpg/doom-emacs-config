@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: uuid.New()
+# key: unew
+# --
+uuid.New()$0

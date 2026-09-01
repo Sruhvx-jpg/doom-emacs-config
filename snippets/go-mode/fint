@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Struct Field BigInt + GORM Tag
+# key: fint
+# --
+${1:Count} int64 \`gorm:"type:bigint;not null" json:"${2:count}"\`$0

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM BigInt Tag
+# key: gint
+# --
+\`gorm:"type:bigint;not null" json:"${1:count}"\`$0

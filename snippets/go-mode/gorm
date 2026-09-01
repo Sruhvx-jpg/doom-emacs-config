@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: gorm tag
+# key: gorm
+# --
+gorm:"${1:type:varchar(255);not null}" $0

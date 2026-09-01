@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Struct Field Text + GORM Tag
+# key: ftext
+# --
+${1:Content} string \`gorm:"type:text;not null" json:"${2:content}"\`$0

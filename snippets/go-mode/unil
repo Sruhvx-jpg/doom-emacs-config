@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: uuid.Nil
+# key: unil
+# --
+uuid.Nil$0

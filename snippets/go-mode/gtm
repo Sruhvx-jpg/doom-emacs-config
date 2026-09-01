@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM AutoCreateTime Tag
+# key: gtm
+# --
+\`gorm:"autoCreateTime" json:"created_at"\`$0

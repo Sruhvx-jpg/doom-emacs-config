@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM Varchar Tag
+# key: gstr
+# --
+\`gorm:"type:varchar(${1:255});not null" json:"${2:name}"\`$0

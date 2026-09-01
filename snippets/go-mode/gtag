@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM + JSON Struct Tag
+# key: gtag
+# --
+\`gorm:"${1:type:varchar(255);not null}" json:"${2:field}"\`$0

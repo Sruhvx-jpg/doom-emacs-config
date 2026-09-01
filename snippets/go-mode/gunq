@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM Unique Tag
+# key: gunq
+# --
+\`gorm:"type:varchar(${1:255});uniqueIndex;not null" json:"${2:email}"\`$0

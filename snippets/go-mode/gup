@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: GORM AutoUpdateTime Tag
+# key: gup
+# --
+\`gorm:"autoUpdateTime" json:"updated_at"\`$0

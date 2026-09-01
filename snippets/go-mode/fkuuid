@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Foreign Key UUID Field
+# key: fkuuid
+# --
+${1:User}ID uuid.UUID \`gorm:"type:uuid;not null;index" json:"${2:user_id}"\`$0

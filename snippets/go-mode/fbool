@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Struct Field Bool + GORM Tag
+# key: fbool
+# --
+${1:IsActive} bool \`gorm:"type:boolean;default:false;not null" json:"${2:is_active}"\`$0
