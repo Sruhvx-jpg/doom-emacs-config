@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: GORM BeforeCreate Hook
+# key: ghook
+# --
+func (m *${1:Model}) BeforeCreate(tx *gorm.DB) error {
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
+	}
+	return nil
+}
+$0

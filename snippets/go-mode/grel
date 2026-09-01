@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: GORM Foreign Key Relation
+# key: grel
+# --
+${1:Parent}ID uuid.UUID `gorm:"type:uuid;not null;index" json:"${2:parent_id}"`
+${1:Parent}   ${1:Parent}     `gorm:"foreignKey:${1:Parent}ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"${3:parent}"`$0

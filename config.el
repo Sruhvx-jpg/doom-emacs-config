@@ -613,6 +613,10 @@ Does not yank you into a new buffer, and immediately syncs to disk."
 ;; 18. GO WORKFLOW & POWERHOUSE CONTROLS
 ;; ==============================================================================
 
+;; Go uses hard tabs by default (gofmt standard) - make tab width a clean 4 spaces instead of ugly 8
+(setq-hook! '(go-mode-hook go-ts-mode-hook) tab-width 4)
+
+
 (defun my/go-run ()
   "Run the current Go package or single file."
   (interactive)
